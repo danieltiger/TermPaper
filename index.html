@@ -50,7 +50,7 @@ function endTimer(message) {
 
 function readCharCode() {
 	var charCode = inputBuffer.charCodeAt(0);
-	log("CharCode: " + charCode);
+
 	inputBuffer = inputBuffer.substr(1);
 	
 	return charCode;
@@ -58,7 +58,7 @@ function readCharCode() {
 
 function readChar() {
 	var nextChar = inputBuffer.charAt(0);
-	log("NextChar: " + nextChar);
+
 	inputBuffer = inputBuffer.substr(1);
 	
 	return nextChar;
