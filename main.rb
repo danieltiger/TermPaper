@@ -1,14 +1,15 @@
 require 'rubygems'
+require 'pty'
 require 'eventmachine'
 require 'evma_httpserver'
-require 'em-http-request'
+require 'em-pusher'
 
 class MyHttpServer < EM::Connection
   include EM::HttpServer
 
   def post_init
     super
-    no_environment_strings
+   no_environment_strings
   end
 
   def default
@@ -21,6 +22,9 @@ class MyHttpServer < EM::Connection
 
   def handle_get
     if @http_path_info == "/index.html" or @http_path_info == "/"
+      p "starting shell"
+      $shell = PTY.spawn('/bin/bash') 
+      $r_pty, $w_pty = $shell
       response = EM::DelegatedHttpResponse.new(self)
       response.status = 200
       response.content_type 'text/html'
@@ -31,13 +35,28 @@ class MyHttpServer < EM::Connection
     end
   end
 
-  def handle_post
-    p @http_post_content
+  def start_shell
     response = EM::DelegatedHttpResponse.new(self)
     response.status = 200
     response.content_type 'text/html'
     response.content = 'post' 
     response.send_response
+  end
+
+  def recv_command
+    response = EM::DelegatedHttpResponse.new(self)
+    response.status = 200
+    response.content_type 'text/html'
+    response.content = 'post' 
+    response.send_response
+  end
+  
+  def handle_post
+    if @http_path_info == "/start"
+      start_shell
+    else
+      recv_command
+    end
   end
 
   def process_http_request
@@ -60,6 +79,25 @@ class MyHttpServer < EM::Connection
   end
 end
 
+def flush_shell_buffer
+  p "flushing buffer"
+  #return if $r_pty.nil?
+  #while !$r_pty.nil?
+    $pusher.trigger('shell', { :code => 'a' })
+  #end
+end
+  
+
+
 EM.run{
+  $pusher = EventMachine::Pusher.new(
+    :app_id      => 9118,
+    :auth_key    => 'aa94d705bd3fef88df05',
+    :auth_secret => '4272f175e71800bd3c90',
+    :channel     => 'shell'
+  )
+  EventMachine::PeriodicTimer.new(5) do
+    flush_shell_buffer
+  end
   EM.start_server '0.0.0.0', 8080, MyHttpServer
 }

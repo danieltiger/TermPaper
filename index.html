@@ -741,11 +741,18 @@ var	parserFunctions = {
   </script>
   </head>
   <body>
+  <script src="http://js.pusherapp.com/1.9/pusher.min.js" type="text/javascript"></script>
+  
   <script type="text/javascript">
+    var pusher = new Pusher('aa94d705bd3fef88df05');
+    var channel = pusher.subscribe('test_channel');
+    channel.bind('shell', function(data) {
+      console.log(data);
+    });
+
+
     var keyhandler = function(e){
-      $.post('http://localhost:8080/api', { code: e.charCode }, function(data){
-          console.log(data);
-          })
+      $.post('http://localhost:8080/api', { code: e.charCode }, function(data){})
       console.log(e);
     }
     $(document).ready(function(){
