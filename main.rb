@@ -32,6 +32,7 @@ class MyHttpServer < EM::Connection
   end
 
   def handle_post
+    p @http_post_content
     response = EM::DelegatedHttpResponse.new(self)
     response.status = 200
     response.content_type 'text/html'
