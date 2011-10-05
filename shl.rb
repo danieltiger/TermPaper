@@ -46,6 +46,7 @@ $reader = Thread.new {
         Thread.stop
       end
       print c.chr
+      File.open('codes', 'a') { |f| f.puts c.chr }
       STDOUT.flush
     rescue
       Thread.stop

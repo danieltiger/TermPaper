@@ -101,7 +101,7 @@ class BufferedPusher
   end
 end
 
-$buffered_pusher =  BufferedPusher.new(10) { |buff| $pusher.trigger('shell', { :code => buff }) }
+$buffered_pusher =  BufferedPusher.new(10) { |buff| $pusher.trigger('shell', { :code => buff.join('') }) }
 
 def flush_shell_buffer
   p "flushing buffer"
