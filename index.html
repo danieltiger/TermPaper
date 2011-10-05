@@ -744,10 +744,12 @@ var	parserFunctions = {
   <script src="http://js.pusherapp.com/1.9/pusher.min.js" type="text/javascript"></script>
   
   <script type="text/javascript">
+    var parser;
     var pusher = new Pusher('aa94d705bd3fef88df05');
     var channel = pusher.subscribe('shell');
     channel.bind('shell', function(data) {
-      console.log(data);
+        parser.acceptData(data.code)
+        console.log(data.code);
     });
 
 

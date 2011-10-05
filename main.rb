@@ -81,10 +81,21 @@ end
 
 def flush_shell_buffer
   p "flushing buffer"
-  #return if $r_pty.nil?
-  #while !$r_pty.nil?
-    $pusher.trigger('shell', { :code => 'a' })
-  #end
+  $reader = Thread.new {
+  while true
+    begin
+      next if $r_pty.nil?
+      c = $r_pty.getc
+      if c.nil? then
+        Thread.stop
+      end
+      $pusher.trigger('shell', { :code => c.chr })
+      #print c.chr
+    rescue
+      Thread.stop
+    end
+  end
+}
 end
   
 
