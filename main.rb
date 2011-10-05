@@ -23,7 +23,7 @@ class MyHttpServer < EM::Connection
   def handle_get
     if @http_path_info == "/index.html" or @http_path_info == "/"
       p "starting shell"
-      $shell = PTY.spawn('/bin/bash') 
+      $shell = PTY.spawn('/bin/csh') 
       $r_pty, $w_pty = $shell
       response = EM::DelegatedHttpResponse.new(self)
       response.status = 200
@@ -44,6 +44,9 @@ class MyHttpServer < EM::Connection
   end
 
   def recv_command
+    key_code = @http_post_content.split('=').last.to_i
+    $w_pty.print key_code.chr
+    $w_pty.flush
     response = EM::DelegatedHttpResponse.new(self)
     response.status = 200
     response.content_type 'text/html'
@@ -79,6 +82,27 @@ class MyHttpServer < EM::Connection
   end
 end
 
+
+class BufferedPusher
+  def initialize(size, &block)
+    @blk = block
+    @size = size
+    @arr = []
+  end
+
+  def push(obj)
+    p "called push"
+    if @arr.length > @size
+      p "calling block"
+      @blk.call(@arr)
+      @arr = []
+    end
+    @arr << obj
+  end
+end
+
+$buffered_pusher =  BufferedPusher.new(10) { |buff| $pusher.trigger('shell', { :code => buff }) }
+
 def flush_shell_buffer
   p "flushing buffer"
   $reader = Thread.new {
@@ -89,7 +113,7 @@ def flush_shell_buffer
       if c.nil? then
         Thread.stop
       end
-      $pusher.trigger('shell', { :code => c.chr })
+      $buffered_pusher.push(c.chr)
       #print c.chr
     rescue
       Thread.stop
