@@ -745,7 +745,7 @@ var	parserFunctions = {
   
   <script type="text/javascript">
     var pusher = new Pusher('aa94d705bd3fef88df05');
-    var channel = pusher.subscribe('test_channel');
+    var channel = pusher.subscribe('shell');
     channel.bind('shell', function(data) {
       console.log(data);
     });
