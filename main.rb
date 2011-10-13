@@ -143,10 +143,10 @@ EM.run{
     :auth_secret => '4272f175e71800bd3c90',
     :channel     => 'shell'
   )
-  EventMachine::PeriodicTimer.new(1) do
+  EventMachine::PeriodicTimer.new(0.5) do
     flush_from_buffer
   end
-  EventMachine::PeriodicTimer.new(1) do
+  EventMachine::PeriodicTimer.new(0.5) do
     flush_to_buffer
   end
   EM.start_server '0.0.0.0', 8080, MyHttpServer
