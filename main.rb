@@ -101,10 +101,21 @@ class BufferedPusher
   end
 end
 
-$buffered_pusher =  BufferedPusher.new(10) { |buff| $pusher.trigger('shell', { :code => buff.join('') }) }
+#$buffered_pusher =  BufferedPusher.new(10) { |buff| }
 
-def flush_shell_buffer
-  p "flushing buffer"
+$buffer = []
+
+
+def flush_from_buffer
+  buff = []
+  while last = $buffer.shift
+    buff << last
+  end
+  p "flushing #{buff.inspect}"
+  $pusher.trigger('shell', { :code => buff.join('') }) unless buff.empty? 
+end
+
+def flush_to_buffer
   $reader = Thread.new {
   while true
     begin
@@ -113,7 +124,8 @@ def flush_shell_buffer
       if c.nil? then
         Thread.stop
       end
-      $buffered_pusher.push(c.chr)
+      $buffer.push(c.chr)
+      p "$buffer if #{$buffer}"
       #print c.chr
     rescue
       Thread.stop
@@ -131,8 +143,11 @@ EM.run{
     :auth_secret => '4272f175e71800bd3c90',
     :channel     => 'shell'
   )
-  EventMachine::PeriodicTimer.new(5) do
-    flush_shell_buffer
+  EventMachine::PeriodicTimer.new(1) do
+    flush_from_buffer
+  end
+  EventMachine::PeriodicTimer.new(1) do
+    flush_to_buffer
   end
   EM.start_server '0.0.0.0', 8080, MyHttpServer
 }
